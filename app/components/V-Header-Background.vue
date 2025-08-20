@@ -5,7 +5,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import * as THREE from "three";
-import gsap from "gsap";
+import { gsap } from "gsap";
 
 import fragmentShader from "../shaders/fragment.glsl";
 import vertexShader from "../shaders/vertex.glsl";
