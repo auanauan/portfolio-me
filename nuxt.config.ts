@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   modules: ["@nuxt/ui", "@nuxt/image"],
   nitro: {
     prerender: {
-      routes: ['/']
+      crawlLinks: false, // ไม่ต้องไล่ลิงก์เพิ่ม
+      routes: []         // ไม่ prerender หน้าใดเลย
     }
   },
   css: ["./app/css/global.css", "./app/css/fonts.css", "./app/css/utils.css"],
