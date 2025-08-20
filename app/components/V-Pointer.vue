@@ -11,7 +11,7 @@
 
 <script setup>
 import { ref, watch, onMounted, getCurrentInstance } from "vue";
-import gsap from "gsap";
+import { gsap } from "gsap";
 import ArrowLink from "../images/arrow/link.svg";
 
 const { $emitter } = useNuxtApp();

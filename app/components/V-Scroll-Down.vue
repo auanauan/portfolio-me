@@ -17,7 +17,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import gsap from "gsap";
+import { gsap } from "gsap";
 
 // ฟังก์ชันตรวจสอบ prefers-reduced-motion
 function usePrefersReducedMotion() {

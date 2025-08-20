@@ -45,8 +45,8 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import ArrowUpSVG from "../images/arrow/up.svg";
 
 gsap.registerPlugin(ScrollTrigger);
