@@ -23,8 +23,11 @@ let aspect = 16 / 9;
 let camera = null;
 let object = null;
 let scene = null;
+let animationId = null; // For requestAnimationFrame fallback
 
 function resize() {
+  if (!canvas.value || !renderer || !camera || !object) return;
+  
   const width = canvas.value.clientWidth;
   const height = canvas.value.clientHeight;
 
@@ -54,89 +57,136 @@ function render() {
 
   if (prefersReducedMotion) hasRunOnce = true;
 
-  object.material.uniforms.time.value = clock.getElapsedTime();
-  renderer.render(scene, camera);
+  if (object?.material?.uniforms?.time) {
+    object.material.uniforms.time.value = clock.getElapsedTime();
+  }
+  
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera);
+  }
+}
+
+// Fallback animation loop using requestAnimationFrame
+function animate() {
+  render();
+  animationId = requestAnimationFrame(animate);
 }
 
 onMounted(() => {
-  prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
-  aspect = window.innerWidth / window.innerHeight;
+  try {
+    prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    aspect = window.innerWidth / window.innerHeight;
 
-  scene = new THREE.Scene();
-  renderer = new THREE.WebGLRenderer({
-    powerPreference: "high-performance",
-    precision: "highp",
-    canvas: canvas.value,
-  });
+    scene = new THREE.Scene();
+    renderer = new THREE.WebGLRenderer({
+      powerPreference: "high-performance",
+      precision: "highp",
+      canvas: canvas.value,
+    });
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.setClearColor(new THREE.Color(0x030303));
-  renderer.failIfMajorPerformanceCaveat = true;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(new THREE.Color(0x030303));
+    renderer.failIfMajorPerformanceCaveat = true;
 
-  camera = new THREE.PerspectiveCamera(70, aspect, 0.5, 2);
-  camera.position.set(0, 0, 1);
+    camera = new THREE.PerspectiveCamera(70, aspect, 0.5, 2);
+    camera.position.set(0, 0, 1);
 
-  const size = 2;
-  const geometry = new THREE.PlaneGeometry(size * aspect, size);
-  const material = new THREE.ShaderMaterial({
-    fragmentShader,
-    vertexShader,
-    extensions: {
-      derivatives: "#extension GL_OES_standard_derivatives : enable",
-    },
-    uniforms: {
-      time: { value: 0.0 },
-      randomSeed: { value: Math.random() },
-      objectOpacity: { value: prefersReducedMotion ? 1.0 : 0.0 },
-      noisePower: { value: 1.0 },
-      pixelRatio: { value: window.devicePixelRatio },
-      resolution: {
-        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+    const size = 2;
+    const geometry = new THREE.PlaneGeometry(size * aspect, size);
+    const material = new THREE.ShaderMaterial({
+      fragmentShader,
+      vertexShader,
+      extensions: {
+        derivatives: "#extension GL_OES_standard_derivatives : enable",
       },
-    },
-    depthTest: false,
-    transparent: true,
-  });
+      uniforms: {
+        time: { value: 0.0 },
+        randomSeed: { value: Math.random() },
+        objectOpacity: { value: prefersReducedMotion ? 1.0 : 0.0 },
+        noisePower: { value: 1.0 },
+        pixelRatio: { value: window.devicePixelRatio },
+        resolution: {
+          value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+        },
+      },
+      depthTest: false,
+      transparent: true,
+    });
 
-  object = new THREE.Mesh(geometry, material);
-  scene.add(object);
+    object = new THREE.Mesh(geometry, material);
+    scene.add(object);
 
-  camera.matrixAutoUpdate = false;
-  object.matrixAutoUpdate = false;
+    camera.matrixAutoUpdate = false;
+    object.matrixAutoUpdate = false;
 
-  window.addEventListener("resize", resize);
-  resize();
+    window.addEventListener("resize", resize);
+    resize();
 
-  window.addEventListener("show-shader", () => {
-    if (
-      object &&
-      object.material &&
-      object.material.uniforms &&
-      object.material.uniforms.objectOpacity
-    ) {
-      isShaderRunning = true;
-      gsap.to(object.material.uniforms.objectOpacity, {
-        value: 1,
-        duration: 1.75,
-        delay: 0.125,
-      });
+    window.addEventListener("show-shader", () => {
+      if (
+        object &&
+        object.material &&
+        object.material.uniforms &&
+        object.material.uniforms.objectOpacity
+      ) {
+        isShaderRunning = true;
+        gsap.to(object.material.uniforms.objectOpacity, {
+          value: 1,
+          duration: 1.75,
+          delay: 0.125,
+        });
+      } else {
+        console.warn(
+          "object or uniforms.objectOpacity not ready yet for GSAP animation"
+        );
+      }
+    });
+
+    // Try to use GSAP ticker, fallback to requestAnimationFrame
+    if (gsap.ticker && typeof gsap.ticker.add === 'function') {
+      console.log('Using GSAP ticker');
+      gsap.ticker.add(render);
     } else {
-      console.warn(
-        "object or uniforms.objectOpacity not ready yet for GSAP animation"
-      );
+      console.log('GSAP ticker not available, using requestAnimationFrame');
+      animate();
     }
-  });
 
-  gsap.ticker.add(render);
+  } catch (error) {
+    console.error('Error during component initialization:', error);
+  }
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", resize);
-  gsap.ticker.remove(render);
+  
+  // Clean up animation
+  if (gsap.ticker && typeof gsap.ticker.remove === 'function') {
+    gsap.ticker.remove(render);
+  }
+  
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
+
+  // Clean up Three.js resources
+  if (renderer) {
+    renderer.dispose();
+  }
+  if (object?.material) {
+    object.material.dispose();
+  }
+  if (object?.geometry) {
+    object.geometry.dispose();
+  }
 });
 </script>
 
-<style></style>
+<style>
+.canvas {
+  width: 100%;
+  height: 100%;
+}
+</style>

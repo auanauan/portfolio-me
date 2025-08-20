@@ -19,7 +19,7 @@
 
 <script setup>
 import { ref, computed, onMounted, useSlots } from 'vue'
-import gsap from 'gsap'
+import { gsap } from "gsap";
 
 // ===== Props =====
 const props = defineProps({

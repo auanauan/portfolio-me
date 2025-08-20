@@ -9,7 +9,7 @@
 
 <script setup>
 import { ref, onMounted, computed, useSlots } from 'vue'
-import gsap from 'gsap'
+import { gsap } from "gsap";
 import ScrollTrigger from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)

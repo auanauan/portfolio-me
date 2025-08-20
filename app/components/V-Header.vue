@@ -26,27 +26,32 @@
     </div>
 
     <div class="header__bottom-bar">
-      <!-- ref ชี้ไปที่ component -->
       <V-Scroll-Down ref="scrollDownComp" @click="$scrollTo('.works')" />
     </div>
   </header>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { gsap } from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
+// Register the plugin properly
 gsap.registerPlugin(ScrollTrigger);
 
+// Refs
 const header = ref(null);
 const headerContainer = ref(null);
 const scrollDownComp = ref(null);
 
+// Data
 const subTitleText = "Frontend Developer";
 const prefersReducedMotion = ref(false);
-
 const subtitleElements = ref([]);
+
+// Store timeline and scroll triggers for cleanup
+let mainTimeline = null;
+const scrollTriggers = [];
 
 function setSubtitleRefs(el) {
   if (el && !subtitleElements.value.includes(el)) {
@@ -54,18 +59,15 @@ function setSubtitleRefs(el) {
   }
 }
 
-onMounted(async () => {
-  prefersReducedMotion.value = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
-
+function createScrollTriggerAnimations() {
   if (
     !prefersReducedMotion.value &&
     header.value &&
     headerContainer.value &&
     scrollDownComp.value?.scrollDownElement
   ) {
-    gsap.fromTo(
+    // Store scroll triggers for cleanup
+    const headerScrollTrigger = gsap.fromTo(
       headerContainer.value,
       { y: -3 },
       {
@@ -78,8 +80,9 @@ onMounted(async () => {
         },
       }
     );
+    scrollTriggers.push(headerScrollTrigger);
 
-    gsap.fromTo(
+    const scrollDownScrollTrigger = gsap.fromTo(
       scrollDownComp.value.scrollDownElement,
       { opacity: 1 },
       {
@@ -92,10 +95,11 @@ onMounted(async () => {
         },
       }
     );
+    scrollTriggers.push(scrollDownScrollTrigger);
   }
+}
 
-  await nextTick();
-
+function createMainTimeline() {
   const lineContents = header.value
     ? Array.from(header.value.querySelectorAll(".line__content"))
     : [];
@@ -108,19 +112,22 @@ onMounted(async () => {
   );
   const navElements = navSections.concat(navMenuButtons);
 
-  const tl = gsap.timeline({
+  mainTimeline = gsap.timeline({
     paused: true,
     delay: 0.25,
     onEnd: () => {
-      if (window.locomotiveScroll) window.locomotiveScroll.update();
+      if (window.locomotiveScroll) {
+        window.locomotiveScroll.update();
+      }
     },
   });
 
+  // Title animation
   if (lineContents.length > 0) {
     if (prefersReducedMotion.value) {
-      tl.from(lineContents, { opacity: 0, stagger: 0.25 });
+      mainTimeline.from(lineContents, { opacity: 0, stagger: 0.25 });
     } else {
-      tl.from(lineContents, {
+      mainTimeline.from(lineContents, {
         yPercent: 105,
         ease: "power1.out",
         duration: 1,
@@ -129,25 +136,86 @@ onMounted(async () => {
     }
   }
 
+  // Subtitle animation
   if (subtitleElements.value.length > 0) {
-    tl.from(
+    mainTimeline.from(
       subtitleElements.value,
       { opacity: 0, stagger: { amount: 0.5, from: "center" } },
       "-=0.75"
     );
   }
 
+  // Navigation animation
   if (navElements.length > 0) {
-    tl.from(navElements, { opacity: 0, stagger: 0.05 }, "<+0.75");
+    mainTimeline.from(navElements, { opacity: 0, stagger: 0.05 }, "<+0.75");
   }
 
+  // Scroll down animation
   if (scrollDownComp.value?.scrollDownElement) {
-    tl.from(scrollDownComp.value.scrollDownElement, { opacity: 0 }, "<+0.25");
+    mainTimeline.from(scrollDownComp.value.scrollDownElement, { opacity: 0 }, "<+0.25");
   }
 
-  window.addEventListener("show-layout", () => {
-    tl.play();
+  return mainTimeline;
+}
+
+function handleShowLayout() {
+  if (mainTimeline) {
+    mainTimeline.play();
+  }
+}
+
+onMounted(async () => {
+  try {
+    // Check for reduced motion preference
+    prefersReducedMotion.value = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    // Create scroll trigger animations
+    createScrollTriggerAnimations();
+
+    // Wait for next tick to ensure DOM is ready
+    await nextTick();
+
+    // Create main timeline
+    createMainTimeline();
+
+    // Add event listener for show-layout
+    window.addEventListener("show-layout", handleShowLayout);
+
+    // Optional: Auto-trigger the animation after a short delay if no show-layout event
+    setTimeout(() => {
+      if (mainTimeline && !mainTimeline.progress()) {
+        console.log('Auto-triggering header animation');
+        mainTimeline.play();
+      }
+    }, 1000);
+
+  } catch (error) {
+    console.error('Error initializing header component:', error);
+  }
+});
+
+onBeforeUnmount(() => {
+  // Clean up event listeners
+  window.removeEventListener("show-layout", handleShowLayout);
+
+  // Kill main timeline
+  if (mainTimeline) {
+    mainTimeline.kill();
+    mainTimeline = null;
+  }
+
+  // Kill all scroll triggers
+  scrollTriggers.forEach(trigger => {
+    if (trigger.scrollTrigger) {
+      trigger.scrollTrigger.kill();
+    }
   });
+  scrollTriggers.length = 0;
+
+  // Refresh ScrollTrigger to clean up any remaining instances
+  ScrollTrigger.refresh();
 });
 </script>
 
