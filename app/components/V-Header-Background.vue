@@ -72,7 +72,7 @@ onMounted(() => {
   });
 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_DPR));
-  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.setClearColor(new THREE.Color(0x030303));
   renderer.failIfMajorPerformanceCaveat = true;
 
