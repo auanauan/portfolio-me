@@ -35,16 +35,16 @@ const works: Work[] = [
   {
     title: "Nordic Land",
     image: "../images/projects/NordicLand.jpg",
-    live: "#",
+    live: "https://github.com/auanauan/Nordic_Project_Land",
     description: "Website, NuxtJS, VueJS, SSCSS, Prisma, PostgreSQL",
     tags: ["Vue", "Nuxt", "Prisma", "PostgreSQL", "SSCSS"],
   },
   {
-    title: "Maze",
-    image: "../images/projects/NordicLand.jpg",
-    live: "#",
-    description: "Website, WASM",
-    tags: ["WASM", "WebGL"],
+    title: "Real Estate",
+    image: "../images/projects/RealEstate-Work.png",
+    live: "https://github.com/auanauan/Coderaven-RealEstates",
+    description: "RealEstate, Vue, Pinia, Typescript, TailwindCSS, i18n",
+    tags: ["Vue", "Pinia", "Typescript", "TailwindCSS", "i18n"],
   },
 ];
 </script>
