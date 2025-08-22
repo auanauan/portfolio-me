@@ -86,46 +86,39 @@ float lines(vec2 uv, float offset) {
 
 void main(void) {
     float shaderZoom = 0.0;
+
     if(resolution.x > 700.0) {
-        shaderZoom = 0.35;
+        shaderZoom = 0.25;
     } else {
-        shaderZoom = 0.55;
+        shaderZoom = 0.45;
     }
 
-    // สีโทนน้ำเงิน-ฟ้าเข้มสดใส
-    vec3 color1 = vec3(5.0, 10.0, 25.0);       // สีพื้นหลังเข้มลึก
-    vec3 color2 = vec3(50.0, 130.0, 220.0);    // ฟ้าอมฟ้าสดใส
-    vec3 color3 = vec3(150.0, 200.0, 255.0);   // ฟ้าอ่อนนุ่ม
+    // Golden Hour Color Palette
+    vec3 color1 = vec3(30.0, 20.0, 45.0);      // Deep purple-navy (shadow color)
+    vec3 color2 = vec3(255.0, 180.0, 100.0);   // Warm golden orange
+    vec3 color3 = vec3(255.0, 120.0, 80.0);    // Sunset coral-red
 
     color1 = normalizeRGBColor(color1);
     color2 = normalizeRGBColor(color2);
     color3 = normalizeRGBColor(color3);
 
-    // สร้างคลื่น ripple เคลื่อนไหวด้วย sine wave
-    float wave = sin(vPosition.x * 15.0 + time * 3.0) * 0.2;
+    float noise = snoise(vPosition + time * 0.175 + randomSeed * 100.0) * (noisePower * 0.55);
+    vec2 baseUv = getRotationMatrix(noise + -1.0) * vPosition.xy * shaderZoom;
 
-    // noise ที่เคลื่อนไหวมากขึ้น เพิ่มความพลิ้วไหว
-    float noise = snoise(vPosition + vec3(time * 0.6, time * 0.4, randomSeed * 100.0)) * (noisePower * 0.6);
-
-    vec2 baseUv = getRotationMatrix(noise + wave - 0.7) * vPosition.xy * shaderZoom;
-
-    float firstPattern = lines(baseUv, 0.6);
-    float secondPattern = lines(baseUv, 0.15);
+    float firstPattern = lines(baseUv, 0.5);
+    float secondPattern = lines(baseUv, 0.05);
 
     vec3 firstColor = mix(color3, color2, firstPattern);
     vec3 resColor = mix(firstColor, color1, secondPattern);
 
-    // เอฟเฟกต์ pulse วูบวาบเพิ่มแสงนุ่มๆ
-    float pulse = 0.6 + 0.4 * sin(time * 4.0 + vPosition.x * 10.0);
-    resColor += pulse * 0.12;
-
-    float grainStrength = 0.08;
+    float grainStrength = 0.075;
     if(pixelRatio > 2.0) {
-        grainStrength = 0.14;
+        grainStrength = 0.135;
     }
 
     vec2 uvNoise = vPosition.xy;
     uvNoise.y *= rand(vec2(uvNoise.y, randomSeed));
+
     vec3 grain = vec3(rand(uvNoise) * grainStrength);
     resColor += grain;
 

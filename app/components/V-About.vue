@@ -54,10 +54,13 @@ import AboutHtml from "../content/about.md?raw";
 
 import JS_SVG from "../images/logo/JavaScript.svg";
 import TS_SVG from "../images/logo/TypeScript.svg";
-import PY_SVG from "../images/logo/Python.svg";
 import HTML_SVG from "../images/logo/HTML.svg";
-import RS_SVG from "../images/logo/Rust.svg";
+import VUE_SVG from "../images/logo/Vue.js.svg";
 import CSS_SVG from "../images/logo/CSS.svg";
+import SCSS_SVG from "../images/logo/Sass.svg";
+import NUXT_SVG from "../images/logo/NuxtJS.svg";
+import REACT_SVG from "../images/logo/React.svg";
+import PostgreSQL_SVG from "../images/logo/PostgresSQL.svg";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -74,16 +77,27 @@ const aboutTechItems = [];
 const aboutSection = ref(null);
 
 const icons = [
-  { component: JS_SVG, svgName: "JavaScript", link: "https://js.org/" },
+  {
+    component: JS_SVG,
+    svgName: "JavaScript",
+    link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+  },
   {
     component: TS_SVG,
     svgName: "TypeScript",
     link: "https://typescriptlang.org/",
   },
   { component: HTML_SVG, svgName: "HTML" },
-  { component: RS_SVG, svgName: "Rust", link: "https://rust-lang.org/" },
   { component: CSS_SVG, svgName: "CSS" },
-  { component: PY_SVG, svgName: "Python", link: "https://python.org/" },
+  { component: SCSS_SVG, svgName: "SASS", link: "https://sass-lang.com/" },
+  { component: VUE_SVG, svgName: "VUE", link: "https://vuejs.org/" },
+  { component: REACT_SVG, svgName: "VUE", link: "https://react.dev/" },
+  { component: NUXT_SVG, svgName: "NUXT", link: "https://nuxt.com/" },
+  {
+    component: PostgreSQL_SVG,
+    svgName: "PostgreSQL",
+    link: "https://www.postgresql.org/",
+  },
 ];
 
 const aboutWords = computed(() => about.value.text.split(" "));
@@ -197,24 +211,24 @@ onMounted(() => {
       }
 
       &__svg {
-        filter: grayscale(1) invert(1);
         max-width: 150px;
-        opacity: 0.75;
+        opacity: 1;
         height: auto;
         width: 100%;
+        transition: filter 0.3s ease;
 
         @media screen and (max-width: 500px) {
           max-width: 30vw;
         }
       }
 
+      &:hover &__svg {
+        filter: brightness(1.2);
+      }
+
       @media (prefers-reduced-motion: reduce) {
         cursor: pointer;
       }
-    }
-
-    & > *:last-child svg {
-      filter: grayscale(1);
     }
   }
 

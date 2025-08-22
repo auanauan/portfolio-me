@@ -1,3 +1,4 @@
-        Hello! I'm Thanakrit Mangkang, a hobbyist developer based in Thailand.
-    While I primarily work with JavaScript/TypeScript, HTML/CSS, and Go, I'm also comfortable with lower-level languages like
-C# and others. Outside of programming, I enjoy watching TV series and staying active through workouts.
+Hello! I'm Thanakrit Mangkang, a hobbyist developer based in Bangkok, Thailand. 
+I primarily work with JavaScript/TypeScript, HTML/CSS, PostgreSQL, and modern frameworks like React, Vue, Nuxt, and Next.js. 
+I also have experience with C#. 
+Outside of programming, I enjoy watching TV series and keeping active through workouts.

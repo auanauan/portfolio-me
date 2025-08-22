@@ -60,7 +60,7 @@ let resizeObserver = null;
 // ===== Data =====
 const socialLinks = [
   { label: "linkedin", href: "https://linkedin.com/in/thanakrit-mangkang-298a7b211" },
-  { label: "github", href: "https://github.com/auanauan/ThanakritMangkang" },
+  { label: "github", href: "https://github.com/auanauan/" },
   { label: "facebook", href: "https://www.facebook.com/thana.krit.33886" },
   { label: "email", href: "mailto:thanakritmk38@gmail.com" },
 ];
