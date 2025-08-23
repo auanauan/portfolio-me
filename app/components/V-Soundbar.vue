@@ -12,7 +12,7 @@
 
 <script setup>
 import { ref } from "vue";
-import music from "../audio/music.mp4";
+import music from "../audio/Neon.mp3";
 
 const audioRef = ref(null);
 const click = ref(false);
